@@ -44,11 +44,6 @@ enum PeriodState {
     case PeriodStateResume
     case PeriodStateFinish
 }
-protocol PeriodInterfaceProtocol {
-    var startTime: UInt32 { get }
-    func getCost() -> UInt32
-    var periodState: PeriodState { get }
-}
 
 protocol PeriodActionProtocol {
     func onStart()
@@ -62,11 +57,9 @@ protocol PeriodActionProtocol {
  时间段记录的默认实现
  支持根据不同的启动方式扩展实现
  */
-public class RecordPeriodItem : RecordItem, PeriodActionProtocol, PeriodInterfaceProtocol {
+public class RecordPeriodItem : Codable, PeriodActionProtocol {
     
-//    public var startTime: UInt32 = 0
     public var content: Array<RecordItem> = []
-//    public var cost: UInt32 = 0
     var periodState: PeriodState = .PeriodStateNone
     public var recordName: String = ""
     public var otherInfo: Dictionary<String, String> = [:]
@@ -77,19 +70,18 @@ public class RecordPeriodItem : RecordItem, PeriodActionProtocol, PeriodInterfac
         case otherInfo
     }
     
-    override init() {
-        super.init()
+    init() {
+
     }
     
-    required init(from decoder: Decoder) throws {
+    required public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: PersonCodingKey.self)
         content = try container.decode([RecordItem].self, forKey: .content)
         recordName = try container.decode(String.self, forKey: .recordName)
         otherInfo = try container.decode(Dictionary.self, forKey: .otherInfo)
-        try! super.init(from: decoder)
     }
     
-    public override func encode(to encoder: Encoder) throws {
+    public  func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: PersonCodingKey.self)
         try container.encode(recordName, forKey: .recordName)
         try container.encode(otherInfo, forKey: .otherInfo)
@@ -99,12 +91,9 @@ public class RecordPeriodItem : RecordItem, PeriodActionProtocol, PeriodInterfac
     func onStart() {
         periodState = .PeriodStateStart
         
-        if startTime == 0 {
-            startTime = convertTimeFromDate(date: Date())
-            let item = RecordItem.init();
-            item.startTime = startTime;
-            content.append(item)
-        }
+        let item = RecordItem.init();
+        item.startTime = convertTimeFromDate(date: Date());
+        content.append(item)
         
     }
     func onPause() {
@@ -113,13 +102,13 @@ public class RecordPeriodItem : RecordItem, PeriodActionProtocol, PeriodInterfac
         }
         periodState = .PeriodStatePause
         let currentItem = content.last
-        currentItem?.cost = convertTimeFromDate(date: Date())-startTime;
+        currentItem?.cost = convertTimeFromDate(date: Date())-currentItem!.startTime;
     }
     func onResume() {
         periodState = .PeriodStateResume
         
         let item = RecordItem.init();
-        item.startTime = startTime;
+        item.startTime = convertTimeFromDate(date: Date());
         content.append(item)
     }
     
@@ -127,35 +116,25 @@ public class RecordPeriodItem : RecordItem, PeriodActionProtocol, PeriodInterfac
         periodState = .PeriodStateFinish
         
         let currentItem = content.last
-        currentItem?.cost = convertTimeFromDate(date: Date())-startTime;
-        
-        cost = getCost();
+        currentItem?.cost = convertTimeFromDate(date: Date())-currentItem!.startTime;
     }
     
     func onDisplay() -> String {
         var state = ""
-        let nowTime = convertTimeFromDate(date: Date())
-        var costTime : UInt32 = 0
-        let pauseCost : UInt32 = 0
         switch periodState {
         case .PeriodStateNone:
             state = "None"
-            costTime = nowTime - startTime - pauseCost
         case .PeriodStateStart:
             state = "开始中"
-            costTime = nowTime - startTime - pauseCost
         case .PeriodStatePause:
             state = "暂停中"
-            costTime = startTime - pauseCost
         case .PeriodStateResume:
             state = "恢复中"
-            costTime = nowTime - startTime - pauseCost
         case .PeriodStateFinish:
             state = "结束"
-            costTime = cost
         }
         
-        return state + String(costTime/60) + "分钟"
+        return state + String(getCost()/60) + "分钟"
     }
     
     func getCost() -> UInt32 {

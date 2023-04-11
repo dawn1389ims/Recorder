@@ -37,8 +37,8 @@ class CommonCode {
             let decoder = JSONDecoder()
             do {
                 try dbArray.append(decoder.decode(RecordPeriodItem.self, from: aString.data(using: .utf8) ?? Data()))
-            } catch  {
-                
+            } catch let error {
+                print("decod error: ", error)
             }
         }
         finishRecords = dbArray

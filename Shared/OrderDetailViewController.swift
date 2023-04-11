@@ -236,8 +236,9 @@ extension OrderDetailViewController {
         var items = Array<Item>.init()
         let records = CommonCode.shared().finishRecords
         for recordItem in records {
-            let timeStr = convertDBTimeToDateStr(time: recordItem.startTime)
-            let string =  timeStr + (recordItem.recordName.count > 0 ? recordItem.recordName : "default")  + String(recordItem.cost/60) + "分钟"
+            let sumCost = recordItem.getCost()
+            let timeStr = convertDBTimeToDateStr(time: sumCost)
+            let string =  timeStr + (recordItem.recordName.count > 0 ? recordItem.recordName : "default")  + String(sumCost/60) + "分钟"
             items.append(Item(type: .contents, text: string, rawValue: string))
         }
         snapshot.appendItems(items, toSection: .contents)
