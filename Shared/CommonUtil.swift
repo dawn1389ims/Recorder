@@ -66,6 +66,14 @@ class CommonCode {
             currentRecord?.onResume()
         }
     }
+    
+    func testRecord() {
+        let record = RecordPeriodItem.init()
+        record.onStart()
+        record.onFinish()
+        finishRecords.append(record)
+        setDataByUserDefault(value: finishRecords)
+    }
 }
 
 

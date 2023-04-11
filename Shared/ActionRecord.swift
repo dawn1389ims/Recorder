@@ -83,10 +83,17 @@ public class RecordPeriodItem : RecordItem, PeriodActionProtocol, PeriodInterfac
     
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: PersonCodingKey.self)
-        content = try container.decode(Array.self, forKey: .content)
+        content = try container.decode([RecordItem].self, forKey: .content)
         recordName = try container.decode(String.self, forKey: .recordName)
         otherInfo = try container.decode(Dictionary.self, forKey: .otherInfo)
         try! super.init(from: decoder)
+    }
+    
+    public override func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: PersonCodingKey.self)
+        try container.encode(recordName, forKey: .recordName)
+        try container.encode(otherInfo, forKey: .otherInfo)
+        try container.encode(content, forKey: .content)
     }
     
     func onStart() {

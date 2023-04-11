@@ -125,6 +125,9 @@ extension OrderDetailViewController: UICollectionViewDelegate {
         collectionView.deselectItem(at: indexPath, animated: true)
         //点击操作
         let item = dataSource.itemIdentifier(for: indexPath)
+        
+        CommonCode.shared().testRecord()
+        
         updateSnapshot()
     }
 }
@@ -218,7 +221,6 @@ extension OrderDetailViewController {
         var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
         let sections = visibleSections()
         snapshot.appendSections(sections)
-        let records = CommonCode.shared().finishRecords
         
         //title
         let soupDescriptions = [Item(type: .titleBanner, text: "喂奶")]
@@ -232,6 +234,7 @@ extension OrderDetailViewController {
         
         //content
         var items = Array<Item>.init()
+        let records = CommonCode.shared().finishRecords
         for recordItem in records {
             let timeStr = convertDBTimeToDateStr(time: recordItem.startTime)
             let string =  timeStr + (recordItem.recordName.count > 0 ? recordItem.recordName : "default")  + String(recordItem.cost/60) + "分钟"
