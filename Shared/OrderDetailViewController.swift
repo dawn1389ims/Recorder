@@ -24,8 +24,15 @@ class OrderDetailViewController: UIViewController {
     override func awakeFromNib() {
         super.awakeFromNib()
         
-        for key in CommonCode.shared().allIntentDataKeys {
-            intentMap[key] = CommonCode.shared().stringClassObjectFromString(className: key)
+        var allIntentDataKeys = [CommonCode.shared().DisplayKeyWord,
+                                 CommonCode.shared().EndKeyWord,
+                                 CommonCode.shared().StartKeyWord,
+                                 CommonCode.shared().NormalStartKeyWord,
+                                 CommonCode.shared().PauseKeyWord,
+                                 CommonCode.shared().ResumeKeyWord,]
+
+        for key in allIntentDataKeys {
+            intentMap[key] = stringClassObjectFromString(className: key)
         }
         configureCollectionView()
         configureDataSource()
@@ -211,7 +218,7 @@ extension OrderDetailViewController {
         var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
         let sections = visibleSections()
         snapshot.appendSections(sections)
-        let recordMap = CommonCode.shared().getNaiRecord()
+        let records = CommonCode.shared().finishRecords
         
         //title
         let soupDescriptions = [Item(type: .titleBanner, text: "喂奶")]
@@ -223,13 +230,11 @@ extension OrderDetailViewController {
             snapshot.appendItems([Item(type: .siri, text: name, rawValue: name, intent: intent)], toSection: .siri)
         }
         
-        
         //content
         var items = Array<Item>.init()
-        let record = recordMap.first
-        for recordItem in record?.recordTimes ?? [] {
-            let timeStr = CommonCode.shared().convertDBTimeToDateStr(time: recordItem.startTime)
-            let string =  timeStr + (recordItem.leftOrRight ? " 左边":"右边") + "喂奶" + String(recordItem.cost/60) + "分钟"
+        for recordItem in records {
+            let timeStr = convertDBTimeToDateStr(time: recordItem.startTime)
+            let string =  timeStr + (recordItem.recordName.count > 0 ? recordItem.recordName : "default")  + String(recordItem.cost/60) + "分钟"
             items.append(Item(type: .contents, text: string, rawValue: string))
         }
         snapshot.appendItems(items, toSection: .contents)

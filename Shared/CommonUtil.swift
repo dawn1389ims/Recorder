@@ -9,168 +9,141 @@ import Foundation
 import Dispatch
 import Intents
 import UIKit
+let groupKeys = "group.com.zzq.record"
+let theDataKey = "theDatas"
+let initDate = getInitDate()
 
 class CommonCode {
-    let groupKeys: String
-    let theDataKey: String
-    public var allIntentDataKeys = ["RecordDisplayIntent",
-                                    "RecordEndIntent",
-                                    "RecordNaiLeftStartIntent",
-                                    "RecordNaiRightStartIntent",
-                                    "RecordNormalStartIntent",
-                                    "RecordPauseIntent",
-                                    "RecordResumeIntent"]
-    var initDate : Date
+//    let groupKeys = "group.com.zzq.record"
+//    let theDataKey = "theDatas"
+    let DisplayKeyWord = "RecordDisplayIntent"
+    let EndKeyWord = "RecordEndIntent"
+    let StartKeyWord = "RecordStartIntent"
+    let NormalStartKeyWord = "RecordNormalStartIntent"
+    let PauseKeyWord = "RecordPauseIntent"
+    let ResumeKeyWord = "RecordResumeIntent"
+    
+    var finishRecords : Array<RecordPeriodItem>
+    var currentRecord : RecordPeriodItem?
+    
     
     init() {
-        groupKeys = "group.com.zzq.record"
-        theDataKey = "theDatas"
         
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ssZZZZ"
-        let date = dateFormatter.date(from: "2022-03-14 12:35:00 UTC")
-        initDate = date!
         
-        if getDataByUserDefault().count == 0 {
-            var theDefault = Dictionary<String,Array<UInt32>>.init()
-            for key in allIntentDataKeys {
-                theDefault[key] = Array<UInt32>.init()
+        //read file
+        let dbData = getDataByUserDefault()
+        var dbArray = Array<RecordPeriodItem>.init()
+        for aString in dbData {
+            let decoder = JSONDecoder()
+            do {
+                try dbArray.append(decoder.decode(RecordPeriodItem.self, from: aString.data(using: .utf8) ?? Data()))
+            } catch  {
+                
             }
-            setDataByUserDefault(value: theDefault)
         }
+        finishRecords = dbArray
     }
     
     static let instance = CommonCode.init()
     class func shared() -> CommonCode {
         return instance
     }
-    func setRecord(action: String) {
-        let dbData = getDataByUserDefault()
-        var dic = Dictionary<String,Array<UInt32>>.init()
-        for (key,value) in dbData {
-            var arr = Array<UInt32>.init()
-            let cacheArr = value
-            for time in cacheArr {
-                arr.append(time)
+    func getIntentEvent(action: String) {
+        if action == StartKeyWord {
+            currentRecord = RecordPeriodItem.init()
+            currentRecord?.onStart()
+        } else if action == EndKeyWord {
+            currentRecord?.onFinish()
+            
+            if (currentRecord != nil) {
+                finishRecords.append(currentRecord!)
             }
-            if action == key {
-                let now = Date();
-                let time = UInt32(now.timeIntervalSince(initDate))
-                arr.append(time)
-            }
-            dic[key]=arr
+            currentRecord = nil
+            setDataByUserDefault(value: finishRecords)
+        } else if action == PauseKeyWord {
+            currentRecord?.onPause()
+        } else if action == ResumeKeyWord {
+            currentRecord?.onResume()
         }
-        setDataByUserDefault(value: dic)
     }
-    
-    func clearAllRecord() {
-        let group = UserDefaults.init(suiteName: groupKeys)
-        group?.removeObject(forKey: theDataKey)
-        group?.synchronize()
-    }
-    
-    func setDataByUserDefault(value:Dictionary<String,Array<UInt32>>) {
-        let group = UserDefaults.init(suiteName: groupKeys)
-        group?.set(value, forKey: theDataKey)
-        group?.synchronize()
-    }
-    func getDataByUserDefault() -> Dictionary<String,Array<UInt32>> {
-        let group = UserDefaults.init(suiteName: groupKeys)
-        let result = group?.dictionary(forKey: theDataKey)
-        if result?.count ?? 0 > 0 {
-            return result as!  Dictionary<String, Array<UInt32>>
-        }
-        return Dictionary<String, Array<UInt32>>.init()
-    }
-    
-    /**
-     业务数据格式:
-     [
-     //ActionRecord
-        name
-        cost:xx,start:xx // RecordPeriodItem
-     ]
-     */
-    func getNaiRecord() -> Array<ActionRecord> {
-        let dbData = getDataByUserDefault()
-        /**
-         左边开始，右边开始 为开始事件
-         结束
-         */
-        var result = Array<ActionRecord>.init()
-        
-        //喂奶
-        //平铺结束时间
-        var endPlatTimes = Array<UInt32>.init()
-        for endKey in periodEndKeys {
-            for endTime in dbData[endKey] ?? [] {
-                endPlatTimes.append(endTime)
+}
+
+
+public func clearAllRecord() {
+    let group = UserDefaults.init(suiteName: groupKeys)
+    group?.removeObject(forKey: theDataKey)
+    group?.synchronize()
+}
+
+public func setDataByUserDefault(value:Array<RecordPeriodItem>) {
+    let group = UserDefaults.init(suiteName: groupKeys)
+    let encoder = JSONEncoder();
+    var dbArray = Array<String>.init()
+    do {
+        var data : Data?
+        for item in value {
+            try data = encoder.encode(item)
+            let string = String(data: data ?? Data(), encoding: .utf8);
+            if string?.count ?? 0 > 0 {
+                dbArray.append(string!)
             }
         }
-        var sortedEndPlatTimes = endPlatTimes.sorted()
-        var aStartItems = Array<RecordPeriodNaiItem>.init()
-        for (keyIndex, startKey) in periodStartKeys.enumerated() {
-            let startTimes = dbData[startKey]
-            for startTime in startTimes ?? [] {
-                for (index, endTime) in sortedEndPlatTimes.enumerated() {
-                    if endTime > startTime {
-                        let recordItem = RecordPeriodNaiItem.init(beginForLeft: true)
-                        recordItem.startTime = startTime
-                        recordItem.cost = endTime - startTime
-                        recordItem.leftOrRight = keyIndex == 0
-                        aStartItems.append(recordItem)
-                        sortedEndPlatTimes.remove(at: index)
-                        break
-                    }
-                }
-            }
-        }
-        aStartItems.sort { (item1, item2) -> Bool in
-            return item1.startTime < item2.startTime
-        }
-        let record = ActionRecord.init(name: "喂奶", recordTimes: aStartItems)
-        result.append(record)
-        return result
     }
-    
-    /// 字符串转换为类
-    ///
-    /// - Parameter className: 类名字符串
-    /// - Returns: 类对象
-    func stringClassObjectFromString(className: String) -> INIntent! {
+    catch {
         
-        /// 获取命名空间
-        let namespace = Bundle.main.infoDictionary!["CFBundleExecutable"] as! String;
-        
-        /// 根据命名空间传来的字符串先转换成anyClass
-        let cls: AnyClass = NSClassFromString(namespace + "." + className)!;
-        
-        // 在这里已经可以return了   返回类型:AnyClass!
-        //return cls;
-        
-        /// 转换成 明确的类
-        let vcClass = cls as! INIntent.Type;
-        
-        /// 返回这个类的对象
-        return vcClass.init();
     }
+    group?.set(dbArray, forKey: theDataKey)
+    group?.synchronize()
+}
+public func getDataByUserDefault() -> Array<String> {
+    let group = UserDefaults.init(suiteName: groupKeys)
+    let result = group?.stringArray(forKey: theDataKey)
+    return result ?? Array<String>.init()
+}
+
+/// 字符串转换为类
+///
+/// - Parameter className: 类名字符串
+/// - Returns: 类对象
+public func stringClassObjectFromString(className: String) -> INIntent! {
     
-    func convertDBTimeToDate(time: UInt32) -> Date {
-        let result = Date.init(timeInterval: TimeInterval(time), since: initDate)
-        return result
-    }
+    /// 获取命名空间
+    let namespace = Bundle.main.infoDictionary!["CFBundleExecutable"] as! String;
     
-    func convertDBTimeToDateStr(time: UInt32) -> String {
-        let date = convertDBTimeToDate(time: time)
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd HH:mm"
-        formatter.timeZone = TimeZone(secondsFromGMT: 8*60*60)
-        let result = formatter.string(from: date)
-        return result
-    }
+    /// 根据命名空间传来的字符串先转换成anyClass
+    let cls: AnyClass = NSClassFromString(namespace + "." + className)!;
     
-    func convertTimeFromDate(date : Date) -> UInt32 {
-        return UInt32(date.timeIntervalSince(initDate))
-    }
+    // 在这里已经可以return了   返回类型:AnyClass!
+    //return cls;
     
+    /// 转换成 明确的类
+    let vcClass = cls as! INIntent.Type;
+    
+    /// 返回这个类的对象
+    return vcClass.init();
+}
+
+public func convertDBTimeToDate(time: UInt32) -> Date {
+    let result = Date.init(timeInterval: TimeInterval(time), since: initDate)
+    return result
+}
+
+public func convertDBTimeToDateStr(time: UInt32) -> String {
+    let date = convertDBTimeToDate(time: time)
+    let formatter = DateFormatter()
+    formatter.dateFormat = "yyyy-MM-dd HH:mm"
+    formatter.timeZone = TimeZone(secondsFromGMT: 8*60*60)
+    let result = formatter.string(from: date)
+    return result
+}
+
+public func convertTimeFromDate(date : Date) -> UInt32 {
+    return UInt32(date.timeIntervalSince(initDate))
+}
+
+public func getInitDate()->Date {
+    let dateFormatter = DateFormatter()
+    dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ssZZZZ"
+    let date = dateFormatter.date(from: "2022-03-14 12:35:00 UTC")
+    return date!
 }

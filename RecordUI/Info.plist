@@ -11,11 +11,10 @@
 				<string>INSendMessageIntent</string>
 				<string>RecordDisplayIntent</string>
 				<string>RecordEndIntent</string>
-				<string>RecordNaiLeftStartIntent</string>
-				<string>RecordNaiRightStartIntent</string>
 				<string>RecordNormalStartIntent</string>
 				<string>RecordPauseIntent</string>
 				<string>RecordResumeIntent</string>
+				<string>RecordStartIntent</string>
 			</array>
 		</dict>
 		<key>NSExtensionMainStoryboard</key>

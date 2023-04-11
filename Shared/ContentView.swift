@@ -14,11 +14,11 @@ struct ContentView: View {
     var body: some View {
         VStack(spacing: 30) {
             Text(font?.postscriptName ?? "")
-            Button("喂奶") {
+            Button("简单记") {
                 self.isPresented = true
             }
             Button(action: {
-                CommonCode.shared().clearAllRecord()
+                clearAllRecord()
             }) {
                 Text("Clear Record")
             }

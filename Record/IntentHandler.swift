@@ -16,7 +16,13 @@ import Intents
 // "<myApp> John saying hello"
 // "Search for messages in <myApp>"
 
-class IntentHandler: INExtension, INSendMessageIntentHandling, INSearchForMessagesIntentHandling, INSetMessageAttributeIntentHandling, RecordNaiLeftStartIntentHandling, RecordNaiRightStartIntentHandling, NaiEndIntentHandling {
+class IntentHandler: INExtension, INSendMessageIntentHandling, INSearchForMessagesIntentHandling, INSetMessageAttributeIntentHandling, RecordDisplayIntentHandling,
+                     RecordEndIntentHandling,
+                     RecordStartIntentHandling,
+                     RecordNormalStartIntentHandling,
+                     RecordPauseIntentHandling,
+                     RecordResumeIntentHandling
+{
     
     override func handler(for intent: INIntent) -> Any {
         // This is the default implementation.  If you want different objects to handle different intents,
@@ -124,32 +130,54 @@ class IntentHandler: INExtension, INSendMessageIntentHandling, INSearchForMessag
     }
     
     // MARK: - MyIntentHandling
-    func handle(intent: RecordNaiLeftStartIntent, completion: @escaping (RecordNaiLeftStartIntentResponse) -> Void) {
-        
-        let userActivity = NSUserActivity(activityType: NSStringFromClass(RecordNaiLeftStartIntent.self))
-        let response = RecordNaiLeftStartIntentResponse(code: .success, userActivity: userActivity)
+    func handle(intent: RecordDisplayIntent, completion: @escaping (RecordDisplayIntentResponse) -> Void) {
+        let userActivity = NSUserActivity(activityType: NSStringFromClass(RecordDisplayIntent.self))
+        let response = RecordDisplayIntentResponse(code: .success, userActivity: userActivity)
         myHandleSendMessage(aim: intent)
         completion(response)
     }
     
-    func handle(intent: RecordNaiRightStartIntent, completion: @escaping (RecordNaiRightStartIntentResponse) -> Void) {
-        let userActivity = NSUserActivity(activityType: NSStringFromClass(RecordNaiRightStartIntent.self))
-        let response = RecordNaiRightStartIntentResponse(code: .success, userActivity: userActivity)
+    func handle(intent: RecordEndIntent, completion: @escaping (RecordEndIntentResponse) -> Void) {
+        let userActivity = NSUserActivity(activityType: NSStringFromClass(RecordEndIntent.self))
+        let response = RecordEndIntentResponse(code: .success, userActivity: userActivity)
         myHandleSendMessage(aim: intent)
         completion(response)
     }
     
-    func handle(intent: NaiEndIntent, completion: @escaping (NaiEndIntentResponse) -> Void) {
-        let userActivity = NSUserActivity(activityType: NSStringFromClass(NaiEndIntent.self))
-        let response = NaiEndIntentResponse(code: .success, userActivity: userActivity)
+    func handle(intent: RecordNormalStartIntent, completion: @escaping (RecordNormalStartIntentResponse) -> Void) {
+        let userActivity = NSUserActivity(activityType: NSStringFromClass(RecordNormalStartIntent.self))
+        let response = RecordNormalStartIntentResponse(code: .success, userActivity: userActivity)
         myHandleSendMessage(aim: intent)
         completion(response)
     }
+    
+    func handle(intent: RecordPauseIntent, completion: @escaping (RecordPauseIntentResponse) -> Void) {
+        let userActivity = NSUserActivity(activityType: NSStringFromClass(RecordPauseIntent.self))
+        let response = RecordPauseIntentResponse(code: .success, userActivity: userActivity)
+        myHandleSendMessage(aim: intent)
+        completion(response)
+    }
+    
+    func handle(intent: RecordResumeIntent, completion: @escaping (RecordResumeIntentResponse) -> Void) {
+        let userActivity = NSUserActivity(activityType: NSStringFromClass(RecordResumeIntent.self))
+        let response = RecordResumeIntentResponse(code: .success, userActivity: userActivity)
+        myHandleSendMessage(aim: intent)
+        completion(response)
+    }
+    
+    func handle(intent: RecordStartIntent, completion: @escaping (RecordStartIntentResponse) -> Void) {
+        let userActivity = NSUserActivity(activityType: NSStringFromClass(RecordStartIntent.self))
+        let response = RecordStartIntentResponse(code: .success, userActivity: userActivity)
+        myHandleSendMessage(aim: intent)
+        completion(response)
+    }
+    
     
     //业务逻辑
     func myHandleSendMessage(aim: INIntent) {
         let str : String = NSStringFromClass(type(of: aim))
-        CommonCode.shared().setRecord(action: str)
+        
+        CommonCode.shared().getIntentEvent(action: str)
     }
 }
 
