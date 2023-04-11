@@ -126,8 +126,6 @@ extension OrderDetailViewController: UICollectionViewDelegate {
         //点击操作
         let item = dataSource.itemIdentifier(for: indexPath)
         
-        CommonCode.shared().testRecord()
-        
         updateSnapshot()
     }
 }
@@ -234,11 +232,10 @@ extension OrderDetailViewController {
         
         //content
         var items = Array<Item>.init()
-        let records = CommonCode.shared().finishRecords
+        let records = CommonCode.shared().readDBContent()
         for recordItem in records {
-            let sumCost = recordItem.getCost()
-            let timeStr = convertDBTimeToDateStr(time: sumCost)
-            let string =  timeStr + (recordItem.recordName.count > 0 ? recordItem.recordName : "default")  + String(sumCost/60) + "分钟"
+            let timeStr = convertDBTimeToDateStr(time: recordItem.content.first!.startTime)
+            let string =  timeStr + " count: '\(recordItem.content.count)', " + periodStateStr(periodState: recordItem.periodState) + timeDisplayFormat(time: recordItem.getCost())
             items.append(Item(type: .contents, text: string, rawValue: string))
         }
         snapshot.appendItems(items, toSection: .contents)

@@ -18,7 +18,7 @@ struct ContentView: View {
                 self.isPresented = true
             }
             Button(action: {
-                clearAllRecord()
+                CommonCode.instance.clearAllRecord()
             }) {
                 Text("Clear Record")
             }

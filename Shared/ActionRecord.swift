@@ -25,19 +25,9 @@ public class RecordItem : Codable {
     init() {
         subNote = ""
     }
-//    public func encode(to encoder: Encoder) throws {
-//        //
-//    }
-//    required public init(from decoder: Decoder) throws {
-//        let container = try decoder.container(keyedBy: PersonCodingKey.self)
-//        subNote = try container.decode(String.self, forKey: .subNote)
-//        startTime = UInt32(try container.decode(Int.self, forKey: .startTime))
-//        cost = UInt32(try container.decode(String.self, forKey: .cost)) ?? 0
-//        subOtherInfo = try container.decode(Dictionary.self, forKey: .subOtherInfo)
-//    }
 }
 
-enum PeriodState {
+public enum PeriodState : UInt32, Codable{
     case PeriodStateNone
     case PeriodStateStart
     case PeriodStatePause
@@ -66,6 +56,7 @@ public class RecordPeriodItem : Codable, PeriodActionProtocol {
     
     enum PersonCodingKey: String, CodingKey {
         case content
+        case periodState
         case recordName
         case otherInfo
     }
@@ -79,6 +70,7 @@ public class RecordPeriodItem : Codable, PeriodActionProtocol {
         content = try container.decode([RecordItem].self, forKey: .content)
         recordName = try container.decode(String.self, forKey: .recordName)
         otherInfo = try container.decode(Dictionary.self, forKey: .otherInfo)
+        periodState = try container.decode(PeriodState.self, forKey: .periodState)
     }
     
     public  func encode(to encoder: Encoder) throws {
@@ -86,6 +78,7 @@ public class RecordPeriodItem : Codable, PeriodActionProtocol {
         try container.encode(recordName, forKey: .recordName)
         try container.encode(otherInfo, forKey: .otherInfo)
         try container.encode(content, forKey: .content)
+        try container.encode(periodState, forKey: .periodState)
     }
     
     func onStart() {
@@ -120,21 +113,7 @@ public class RecordPeriodItem : Codable, PeriodActionProtocol {
     }
     
     func onDisplay() -> String {
-        var state = ""
-        switch periodState {
-        case .PeriodStateNone:
-            state = "None"
-        case .PeriodStateStart:
-            state = "开始中"
-        case .PeriodStatePause:
-            state = "暂停中"
-        case .PeriodStateResume:
-            state = "恢复中"
-        case .PeriodStateFinish:
-            state = "结束"
-        }
-        
-        return state + String(getCost()/60) + "分钟"
+        return periodStateStr(periodState: periodState) + timeDisplayFormat(time: getCost())
     }
     
     func getCost() -> UInt32 {

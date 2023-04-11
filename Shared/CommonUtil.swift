@@ -23,13 +23,62 @@ class CommonCode {
     let PauseKeyWord = "RecordPauseIntent"
     let ResumeKeyWord = "RecordResumeIntent"
     
-    var finishRecords : Array<RecordPeriodItem>
+    var finishRecords : Array<RecordPeriodItem> = []
     var currentRecord : RecordPeriodItem?
     
     
     init() {
         
+        readDBContent()
+    }
+    
+    static let instance = CommonCode.init()
+    class func shared() -> CommonCode {
+        return instance
+    }
+    func getIntentEvent(action: String) {
+        print("intent event" + action)
+        if action == StartKeyWord {
+            if currentRecord != nil {
+                print("confict exist record \(convertDBTimeToDateStr(time: (currentRecord?.content.first!.startTime)!))")
+            }
+            currentRecord = RecordPeriodItem.init()
+            currentRecord?.onStart()
+            finishRecords.append(currentRecord!)
+            setDataByUserDefault(value: finishRecords)
+        } else if action == EndKeyWord {
+            currentRecord?.onFinish()
+            currentRecord = nil
+            setDataByUserDefault(value: finishRecords)
+        } else if action == PauseKeyWord {
+            currentRecord?.onPause()
+            setDataByUserDefault(value: finishRecords)
+        } else if action == ResumeKeyWord {
+            currentRecord?.onResume()
+            setDataByUserDefault(value: finishRecords)
+        }
+    }
+    
+    func testRecord() {
+        let record = RecordPeriodItem.init()
+        record.onStart()
+        record.onFinish()
+        finishRecords.append(record)
+        setDataByUserDefault(value: finishRecords)
+    }
+    
+    
+    public func clearAllRecord() {
+        finishRecords.removeAll()
+        currentRecord = nil
         
+        let group = UserDefaults.init(suiteName: groupKeys)
+        group?.removeObject(forKey: theDataKey)
+        group?.synchronize()
+    }
+    
+    
+    public func readDBContent()->Array<RecordPeriodItem> {
         //read file
         let dbData = getDataByUserDefault()
         var dbArray = Array<RecordPeriodItem>.init()
@@ -42,46 +91,11 @@ class CommonCode {
             }
         }
         finishRecords = dbArray
-    }
-    
-    static let instance = CommonCode.init()
-    class func shared() -> CommonCode {
-        return instance
-    }
-    func getIntentEvent(action: String) {
-        if action == StartKeyWord {
-            currentRecord = RecordPeriodItem.init()
-            currentRecord?.onStart()
-        } else if action == EndKeyWord {
-            currentRecord?.onFinish()
-            
-            if (currentRecord != nil) {
-                finishRecords.append(currentRecord!)
-            }
-            currentRecord = nil
-            setDataByUserDefault(value: finishRecords)
-        } else if action == PauseKeyWord {
-            currentRecord?.onPause()
-        } else if action == ResumeKeyWord {
-            currentRecord?.onResume()
-        }
-    }
-    
-    func testRecord() {
-        let record = RecordPeriodItem.init()
-        record.onStart()
-        record.onFinish()
-        finishRecords.append(record)
-        setDataByUserDefault(value: finishRecords)
+        return finishRecords
     }
 }
 
 
-public func clearAllRecord() {
-    let group = UserDefaults.init(suiteName: groupKeys)
-    group?.removeObject(forKey: theDataKey)
-    group?.synchronize()
-}
 
 public func setDataByUserDefault(value:Array<RecordPeriodItem>) {
     let group = UserDefaults.init(suiteName: groupKeys)
@@ -97,15 +111,17 @@ public func setDataByUserDefault(value:Array<RecordPeriodItem>) {
             }
         }
     }
-    catch {
-        
+    catch let error {
+        print("encoder error: ", error)
     }
     group?.set(dbArray, forKey: theDataKey)
     group?.synchronize()
+    print("db set: ", dbArray)
 }
 public func getDataByUserDefault() -> Array<String> {
     let group = UserDefaults.init(suiteName: groupKeys)
     let result = group?.stringArray(forKey: theDataKey)
+    print("db get: ", result as Any)
     return result ?? Array<String>.init()
 }
 
@@ -154,4 +170,29 @@ public func getInitDate()->Date {
     dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ssZZZZ"
     let date = dateFormatter.date(from: "2022-03-14 12:35:00 UTC")
     return date!
+}
+
+public func timeDisplayFormat(time : UInt32)->String {
+    if time >= 60 {
+        return  "\(time/60) 分 \(time%60) 秒"
+    } else {
+        return "\(time) 秒"
+    }
+}
+
+public func periodStateStr(periodState: PeriodState) -> String {
+    var state = ""
+    switch periodState {
+    case .PeriodStateNone:
+        state = "None"
+    case .PeriodStateStart:
+        state = "开始中"
+    case .PeriodStatePause:
+        state = "暂停中"
+    case .PeriodStateResume:
+        state = "恢复中"
+    case .PeriodStateFinish:
+        state = "结束"
+    }
+    return state
 }
