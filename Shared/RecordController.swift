@@ -8,9 +8,6 @@
 import Foundation
 class RecordController {
     
-    var finishRecords : Array<RecordPeriodItem> = []
-    var currentRecord : RecordPeriodItem?
-    
     static private let instance = RecordController.init()
     class func shared() -> RecordController {
         return instance
@@ -18,40 +15,44 @@ class RecordController {
     
     func getIntentEvent(action: String) {
         print("intent event" + action)
+        let records = RecordController.shared().readDBContent()
+        
         if action == StartKeyWord {
-            if currentRecord != nil {
-                print("confict exist record \(convertDBTimeToDateStr(time: (currentRecord?.content.first!.startTime)!))")
+            
+            var res = records
+            let newItem = RecordPeriodItem.init()
+            newItem.onStart()
+            res.append(newItem)
+            setDataByUserDefault(value: res)
+        } else if action == EndKeyWord || action == PauseKeyWord {
+            for item in records.reversed() {
+                if item.periodState == .PeriodStateStart || item.periodState == .PeriodStateResume {
+                    if action == EndKeyWord {
+                        item.onFinish()
+                    } else if action == PauseKeyWord {
+                        item.onPause()
+                    }
+                    setDataByUserDefault(value: records)
+                    return
+                }
             }
-            currentRecord = RecordPeriodItem.init()
-            currentRecord?.onStart()
-            finishRecords.append(currentRecord!)
-            setDataByUserDefault(value: finishRecords)
-        } else if action == EndKeyWord {
-            currentRecord?.onFinish()
-            currentRecord = nil
-            setDataByUserDefault(value: finishRecords)
-        } else if action == PauseKeyWord {
-            currentRecord?.onPause()
-            setDataByUserDefault(value: finishRecords)
         } else if action == ResumeKeyWord {
-            currentRecord?.onResume()
-            setDataByUserDefault(value: finishRecords)
+            for item in records.reversed() {
+                if item.periodState == .PeriodStatePause {
+                    item.onResume()
+                    setDataByUserDefault(value: records)
+                    return
+                }
+            }
         }
     }
     
     func testRecord() {
-        let record = RecordPeriodItem.init()
-        record.onStart()
-        record.onFinish()
-        finishRecords.append(record)
-        setDataByUserDefault(value: finishRecords)
+        getIntentEvent(action: StartKeyWord)
+        getIntentEvent(action: EndKeyWord)
     }
     
-    
     public func clearAllRecord() {
-        finishRecords.removeAll()
-        currentRecord = nil
-        
         let group = UserDefaults.init(suiteName: groupKeys)
         group?.removeObject(forKey: theDataKey)
         group?.synchronize()
@@ -70,10 +71,6 @@ class RecordController {
                 print("decod error: ", error)
             }
         }
-        finishRecords = dbArray
-        if finishRecords.last?.periodState != .PeriodStateFinish {
-            currentRecord = finishRecords.last
-        }
-        return finishRecords
+        return dbArray
     }
 }

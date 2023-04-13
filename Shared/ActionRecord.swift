@@ -90,9 +90,6 @@ public class RecordPeriodItem : Codable, PeriodActionProtocol {
         
     }
     func onPause() {
-        if periodState == .PeriodStateNone {
-            return
-        }
         periodState = .PeriodStatePause
         let currentItem = content.last
         currentItem?.cost = convertTimeFromDate(date: Date())-currentItem!.startTime;
