@@ -18,7 +18,7 @@ struct ContentView: View {
                 self.isPresented = true
             }
             Button(action: {
-                CommonCode.instance.clearAllRecord()
+                RecordController.shared().clearAllRecord()
             }) {
                 Text("Clear Record")
             }

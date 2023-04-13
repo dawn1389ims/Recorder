@@ -24,12 +24,12 @@ class OrderDetailViewController: UIViewController {
     override func awakeFromNib() {
         super.awakeFromNib()
         
-        var allIntentDataKeys = [CommonCode.shared().DisplayKeyWord,
-                                 CommonCode.shared().EndKeyWord,
-                                 CommonCode.shared().StartKeyWord,
-                                 CommonCode.shared().NormalStartKeyWord,
-                                 CommonCode.shared().PauseKeyWord,
-                                 CommonCode.shared().ResumeKeyWord,]
+        let allIntentDataKeys = [DisplayKeyWord,
+                                 EndKeyWord,
+                                 StartKeyWord,
+                                 NormalStartKeyWord,
+                                 PauseKeyWord,
+                                 ResumeKeyWord,]
 
         for key in allIntentDataKeys {
             intentMap[key] = stringClassObjectFromString(className: key)
@@ -232,7 +232,7 @@ extension OrderDetailViewController {
         
         //content
         var items = Array<Item>.init()
-        let records = CommonCode.shared().readDBContent()
+        let records = RecordController.shared().readDBContent()
         for recordItem in records {
             let timeStr = convertDBTimeToDateStr(time: recordItem.content.first!.startTime)
             let string =  timeStr + " count: '\(recordItem.content.count)', " + periodStateStr(periodState: recordItem.periodState) + timeDisplayFormat(time: recordItem.getCost())

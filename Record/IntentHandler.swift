@@ -177,7 +177,7 @@ class IntentHandler: INExtension, INSendMessageIntentHandling, INSearchForMessag
     func myHandleSendMessage(aim: INIntent) {
         let str : String = NSStringFromClass(type(of: aim))
         
-        CommonCode.shared().getIntentEvent(action: str)
+        RecordController.shared().getIntentEvent(action: str)
     }
 }
 

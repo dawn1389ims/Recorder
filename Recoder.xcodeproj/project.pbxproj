@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8B66E27129E784BA0026C19E /* RecordController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B66E27029E784BA0026C19E /* RecordController.swift */; };
+		8B66E27229E784BA0026C19E /* RecordController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B66E27029E784BA0026C19E /* RecordController.swift */; };
+		8B66E27329E7868E0026C19E /* RecordController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B66E27029E784BA0026C19E /* RecordController.swift */; };
 		C62C5DC327E73081008D3A62 /* Tests_iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = C62C5DC227E73081008D3A62 /* Tests_iOS.swift */; };
 		C62C5DC527E73081008D3A62 /* Tests_iOSLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C62C5DC427E73081008D3A62 /* Tests_iOSLaunchTests.swift */; };
 		C62C5DCF27E73081008D3A62 /* Tests_macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = C62C5DCE27E73081008D3A62 /* Tests_macOS.swift */; };
@@ -88,6 +91,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		8B66E27029E784BA0026C19E /* RecordController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordController.swift; sourceTree = "<group>"; };
 		C62C5DAA27E7307F008D3A62 /* RecoderApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecoderApp.swift; sourceTree = "<group>"; };
 		C62C5DAB27E7307F008D3A62 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		C62C5DAC27E73081008D3A62 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -195,6 +199,7 @@
 				C62C5DAB27E7307F008D3A62 /* ContentView.swift */,
 				C62C5E7127F1E3CD008D3A62 /* ActionRecord.swift */,
 				C62C5E6527EF1030008D3A62 /* CommonUtil.swift */,
+				8B66E27029E784BA0026C19E /* RecordController.swift */,
 				C62C5E6D27F14CEA008D3A62 /* OrderDetailViewController.swift */,
 				C62C5E6927F14885008D3A62 /* AddToSiriCollectionViewCell.swift */,
 				C62C5DAC27E73081008D3A62 /* Assets.xcassets */,
@@ -494,6 +499,7 @@
 				C62C5E6A27F14885008D3A62 /* AddToSiriCollectionViewCell.swift in Sources */,
 				C62C5DD427E73081008D3A62 /* ContentView.swift in Sources */,
 				C62C5E7227F1E3CD008D3A62 /* ActionRecord.swift in Sources */,
+				8B66E27129E784BA0026C19E /* RecordController.swift in Sources */,
 				C62C5DD227E73081008D3A62 /* RecoderApp.swift in Sources */,
 				C62C5E6627EF1030008D3A62 /* CommonUtil.swift in Sources */,
 				C62C5E3B27EC2011008D3A62 /* Intents.intentdefinition in Sources */,
@@ -533,6 +539,7 @@
 			files = (
 				C62C5E3C27EC2011008D3A62 /* Intents.intentdefinition in Sources */,
 				C62C5E1127E76C9D008D3A62 /* IntentHandler.swift in Sources */,
+				8B66E27229E784BA0026C19E /* RecordController.swift in Sources */,
 				C62C5E7327F1E3CD008D3A62 /* ActionRecord.swift in Sources */,
 				C62C5E6B27F14885008D3A62 /* AddToSiriCollectionViewCell.swift in Sources */,
 				C62C5E6F27F14CEA008D3A62 /* OrderDetailViewController.swift in Sources */,
@@ -546,6 +553,7 @@
 			files = (
 				C62C5E3D27EC2011008D3A62 /* Intents.intentdefinition in Sources */,
 				C62C5E1C27E76C9D008D3A62 /* IntentViewController.swift in Sources */,
+				8B66E27329E7868E0026C19E /* RecordController.swift in Sources */,
 				C62C5E7427F1E3CD008D3A62 /* ActionRecord.swift in Sources */,
 				C62C5E6C27F14885008D3A62 /* AddToSiriCollectionViewCell.swift in Sources */,
 				C62C5E7027F14CEA008D3A62 /* OrderDetailViewController.swift in Sources */,

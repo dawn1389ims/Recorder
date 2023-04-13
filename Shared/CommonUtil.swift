@@ -11,91 +11,13 @@ import Intents
 import UIKit
 let groupKeys = "group.com.zzq.record"
 let theDataKey = "theDatas"
+let DisplayKeyWord = "RecordDisplayIntent"
+let EndKeyWord = "RecordEndIntent"
+let StartKeyWord = "RecordStartIntent"
+let NormalStartKeyWord = "RecordNormalStartIntent"
+let PauseKeyWord = "RecordPauseIntent"
+let ResumeKeyWord = "RecordResumeIntent"
 let initDate = getInitDate()
-
-class CommonCode {
-//    let groupKeys = "group.com.zzq.record"
-//    let theDataKey = "theDatas"
-    let DisplayKeyWord = "RecordDisplayIntent"
-    let EndKeyWord = "RecordEndIntent"
-    let StartKeyWord = "RecordStartIntent"
-    let NormalStartKeyWord = "RecordNormalStartIntent"
-    let PauseKeyWord = "RecordPauseIntent"
-    let ResumeKeyWord = "RecordResumeIntent"
-    
-    var finishRecords : Array<RecordPeriodItem> = []
-    var currentRecord : RecordPeriodItem?
-    
-    
-    init() {
-        
-        readDBContent()
-    }
-    
-    static let instance = CommonCode.init()
-    class func shared() -> CommonCode {
-        return instance
-    }
-    func getIntentEvent(action: String) {
-        print("intent event" + action)
-        if action == StartKeyWord {
-            if currentRecord != nil {
-                print("confict exist record \(convertDBTimeToDateStr(time: (currentRecord?.content.first!.startTime)!))")
-            }
-            currentRecord = RecordPeriodItem.init()
-            currentRecord?.onStart()
-            finishRecords.append(currentRecord!)
-            setDataByUserDefault(value: finishRecords)
-        } else if action == EndKeyWord {
-            currentRecord?.onFinish()
-            currentRecord = nil
-            setDataByUserDefault(value: finishRecords)
-        } else if action == PauseKeyWord {
-            currentRecord?.onPause()
-            setDataByUserDefault(value: finishRecords)
-        } else if action == ResumeKeyWord {
-            currentRecord?.onResume()
-            setDataByUserDefault(value: finishRecords)
-        }
-    }
-    
-    func testRecord() {
-        let record = RecordPeriodItem.init()
-        record.onStart()
-        record.onFinish()
-        finishRecords.append(record)
-        setDataByUserDefault(value: finishRecords)
-    }
-    
-    
-    public func clearAllRecord() {
-        finishRecords.removeAll()
-        currentRecord = nil
-        
-        let group = UserDefaults.init(suiteName: groupKeys)
-        group?.removeObject(forKey: theDataKey)
-        group?.synchronize()
-    }
-    
-    
-    public func readDBContent()->Array<RecordPeriodItem> {
-        //read file
-        let dbData = getDataByUserDefault()
-        var dbArray = Array<RecordPeriodItem>.init()
-        for aString in dbData {
-            let decoder = JSONDecoder()
-            do {
-                try dbArray.append(decoder.decode(RecordPeriodItem.self, from: aString.data(using: .utf8) ?? Data()))
-            } catch let error {
-                print("decod error: ", error)
-            }
-        }
-        finishRecords = dbArray
-        return finishRecords
-    }
-}
-
-
 
 public func setDataByUserDefault(value:Array<RecordPeriodItem>) {
     let group = UserDefaults.init(suiteName: groupKeys)
